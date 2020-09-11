@@ -1,0 +1,62 @@
+#export CUDA_BASE_VERSION=10.2
+#export UBUNTU_VERSION=18.04
+#export CUDNN_VERSION=7.6.5.32
+#export TENSORFLOW_VERSION=1.12
+#docker build -t honnotate --build-arg CUDA_BASE_VERSION=$(echo $CUDA_BASE_VERSION) --build-arg UBUNTU_VERSION=$(echo $UBUNTU_VERSION) --build-arg CUDNN_VERSION=$(echo $CUDNN_VERSION) --build-arg TENSORFLOW_VERSION=$(echo $TENSORFLOW_VERSION) .
+ARG CUDA_BASE_VERSION
+ARG UBUNTU_VERSION
+ARG CUDNN_VERSION
+
+# use CUDA + OpenGL
+FROM nvidia/cudagl:${CUDA_BASE_VERSION}-devel-ubuntu${UBUNTU_VERSION}
+MAINTAINER Domhnall Boyle (domhnallboyle@gmail.com)
+
+# arguments from command line
+ARG CUDA_BASE_VERSION
+ARG UBUNTU_VERSION
+ARG CUDNN_VERSION
+ARG TENSORFLOW_VERSION
+
+# set environment variables
+ENV CUDA_BASE_VERSION=${CUDA_BASE_VERSION}
+ENV CUDNN_VERSION=${CUDNN_VERSION}
+ENV TENSORFLOW_VERSION=${TENSORFLOW_VERSION}
+
+# install apt dependencies
+RUN apt-get update
+RUN apt-get install -y software-properties-common
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt-get update && apt-get install -y \
+	python3.7 \
+	python3-pip \
+    python3-tk \
+	git \
+	vim \
+	wget
+
+# install newest cmake version
+RUN apt-get purge cmake && cd ~ && wget https://github.com/Kitware/CMake/releases/download/v3.14.5/cmake-3.14.5.tar.gz && tar -xvf cmake-3.14.5.tar.gz
+RUN cd ~/cmake-3.14.5 && ./bootstrap && make && make install
+
+# setting up cudnn
+RUN apt-get install -y --no-install-recommends \             
+	libcudnn7=$(echo $CUDNN_VERSION)-1+cuda$(echo $CUDA_BASE_VERSION) \             
+	libcudnn7-dev=$(echo $CUDNN_VERSION)-1+cuda$(echo $CUDA_BASE_VERSION) 
+RUN apt-mark hold libcudnn7 && rm -rf /var/lib/apt/lists/*
+
+# install python dependencies
+RUN python3.7 -m pip install pip --upgrade
+RUN python3.7 -m pip install numpy \
+                             matplotlib \
+                             scikit-image \
+                             transforms3d \
+                             tqdm \
+                             opencv-python \
+                             cython open3d \
+                             scikit-learn \
+                             pyyaml \
+                             pypng \
+                             tensorflow_probability==0.5.0
+RUN python3.7 -m pip install pyrender==0.1.23
+RUN python3.7 -m pip install tensorflow-gpu==$(echo $TENSORFLOW_VERSION)
+RUN python3.7 -m pip install tensorflow_probability==0.5.0
