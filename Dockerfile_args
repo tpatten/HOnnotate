@@ -1,5 +1,11 @@
+#export CUDA_BASE_VERSION=10.0
+#export CUDNN_VERSION=7.6.5.32
+#export TENSORFLOW_VERSION=1.13.1
+
+ARG CUDA_BASE_VERSION
+
 # use CUDA + OpenGL
-FROM nvidia/cudagl:10.0-devel-ubuntu16.04
+FROM nvidia/cudagl:${CUDA_BASE_VERSION}-devel-ubuntu16.04
 MAINTAINER Domhnall Boyle (domhnallboyle@gmail.com)
 
 # install apt dependencies
@@ -26,15 +32,17 @@ ARG CUDA_BASE_VERSION
 ARG CUDNN_VERSION
 
 # set environment variables
-#ENV CUDA_BASE_VERSION=10.0
-#ENV CUDNN_VERSION=7.6.5.32
-#ENV TENSORFLOW_VERSION=1.13.1
+ENV CUDA_BASE_VERSION=${CUDA_BASE_VERSION}
+ENV CUDNN_VERSION=${CUDNN_VERSION}
 
 # setting up cudnn
 RUN apt-get install -y --no-install-recommends \             
-	libcudnn7=7.6.5.32-1+cuda10.0 \             
-	libcudnn7-dev=7.6.5.32-1+cuda10.0
+	libcudnn7=$(echo $CUDNN_VERSION)-1+cuda$(echo $CUDA_BASE_VERSION) \             
+	libcudnn7-dev=$(echo $CUDNN_VERSION)-1+cuda$(echo $CUDA_BASE_VERSION) 
 RUN apt-mark hold libcudnn7 && rm -rf /var/lib/apt/lists/*
+
+ARG TENSORFLOW_VERSION
+ENV TENSORFLOW_VERSION=${TENSORFLOW_VERSION}
 
 # install python dependencies
 RUN python3.7 -m pip install pip --upgrade
@@ -49,9 +57,10 @@ RUN python3.7 -m pip install numpy=1.15.1 \
                              scikit-learn \
                              pyyaml \
                              pypng \
-                             vtk
+                             vtk \
+                             tensorflow_probability==0.5.0
 RUN python3.7 -m pip install pyrender==0.1.23
-RUN python3.7 -m pip install tensorflow-gpu==1.13.1
+RUN python3.7 -m pip install tensorflow-gpu==$(echo $TENSORFLOW_VERSION)
 RUN python3.7 -m pip install tensorflow_probability==0.5.0
 
 # for installing dirt

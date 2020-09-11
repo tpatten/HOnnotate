@@ -108,6 +108,7 @@ def objectTracker(w, h, paramInit, camProp, objMesh, out_dir, configData):
     # tf stuff
     config = tf.ConfigProto()
     config.gpu_options.per_process_gpu_memory_fraction = 0.9
+    config.gpu_options.allow_growth = True
     session = tf.Session(config=config)
     session.__enter__()
     tf.global_variables_initializer().run()
