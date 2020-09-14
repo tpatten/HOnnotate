@@ -38,7 +38,8 @@ RUN apt-mark hold libcudnn7 && rm -rf /var/lib/apt/lists/*
 
 # install python dependencies
 RUN python3.7 -m pip install pip --upgrade
-RUN python3.7 -m pip install numpy=1.15.1 \
+RUN python3.7 -m pip install numpy==1.15.1 \
+                             scipy==1.1.0 \
                              matplotlib \
                              scikit-image \
                              transforms3d \

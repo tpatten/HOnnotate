@@ -204,7 +204,8 @@ def handPoseMF(w, h, objParamInitList, handParamInitList, objMesh, camProp, out_
 
     # tf stuff
     config = tf.ConfigProto()
-    config.gpu_options.per_process_gpu_memory_fraction = 0.9
+    config.gpu_options.per_process_gpu_memory_fraction = 0.33
+    config.gpu_options.allow_growth = True
     session = tf.Session(config=config)
     session.__enter__()
     tf.global_variables_initializer().run()
@@ -227,7 +228,7 @@ def handPoseMF(w, h, objParamInitList, handParamInitList, objMesh, camProp, out_
                             hspace=0.045,
                             wspace=0.124)
         figManager = plt.get_current_fig_manager()
-        figManager.window.showMaximized()
+        #figManager.window.showMaximized()
     else:
         plt.ioff()
 
